@@ -1,0 +1,39 @@
+name: Release skill
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate repository skills
+        run: python tools/validate_repository.py
+      - name: Run tests
+        run: python tools/run_tests.py
+      - name: Package WPF Development skill
+        run: python tools/package_skill.py wpf-development "$RUNNER_TEMP/wpf-development"
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wpf-development-skill
+          path: ${{ runner.temp }}/wpf-development/skill.zip
+          if-no-files-found: error
+      - name: Attach package to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --generate-notes --title "$GITHUB_REF_NAME"
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/wpf-development/skill.zip" --clobber
