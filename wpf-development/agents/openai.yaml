@@ -1,0 +1,13 @@
+interface:
+  display_name: WPF Development
+  short_description: Build and modernize production WPF applications with .NET 10
+  brand_color: '#512BD4'
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
