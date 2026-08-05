@@ -1,0 +1,17 @@
+{
+  "name": "troubleshoot-host-startup-failure",
+  "category": "troubleshoot",
+  "prompt": "A .NET 10 WPF application using Generic Host exits during startup after a hosted service throws. Diagnose ownership, logging, degraded-mode, and shutdown behavior.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Identifies startup ordering, exception propagation, and application lifetime ownership.",
+    "Distinguishes a fatal dependency from a recoverable degraded-mode condition.",
+    "Provides structured logging, bounded startup, cancellation, and clean disposal validation."
+  ]
+}

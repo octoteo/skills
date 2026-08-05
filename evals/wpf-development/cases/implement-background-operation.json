@@ -1,0 +1,17 @@
+{
+  "name": "implement-background-operation",
+  "category": "implement",
+  "prompt": "Implement a cancellable long-running import operation in WPF with progress reporting, timeouts, UI responsiveness, and safe error handling.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Keeps blocking I/O off the dispatcher and marshals only UI state changes.",
+    "Uses cancellation, progress, timeout, and idempotency or retry boundaries deliberately.",
+    "Explains exception routing and verifies cancellation and shutdown behavior."
+  ]
+}

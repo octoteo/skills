@@ -1,0 +1,17 @@
+{
+  "name": "review-net10-compatibility",
+  "category": "review",
+  "prompt": "Review an upgraded WPF project for .NET 10 and C# 14 compatibility issues, including XAML resources, WPF and WinForms interop, and compiler behavior changes.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Checks net10.0-windows, UseWPF, empty Grid definition collections, and DynamicResource validity.",
+    "Checks WPF/WinForms type ambiguity and relevant C# 14 contextual-keyword or overload changes.",
+    "Records whether each changed behavior is adopted, adapted, deferred, or blocks migration."
+  ]
+}

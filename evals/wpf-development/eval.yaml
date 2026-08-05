@@ -1,26 +1,34 @@
 {
+  "schema_version": 1,
   "name": "wpf-development",
-  "description": "Activation and capability scenarios for the WPF Development skill.",
-  "type": "capability",
-  "defaults": {"timeout": "5m", "runs": 1},
-  "stimuli": [
-    {"name":"create-small-wpf-utility","category":"create","prompt":"Create a small .NET 10 WPF desktop utility with a single window, settings persistence, and one unit-test project. Avoid unnecessary modular architecture.","graders":[{"type":"prompt"}],"rubric":["Chooses the compact architecture tier and explains why it is sufficient.","Targets net10.0-windows with UseWPF and includes a testable non-UI boundary.","Does not introduce runtime plugins, an event bus, or excessive projects without evidence."]},
-    {"name":"create-industrial-wpf-product","category":"create","prompt":"Design a long-lived .NET 10 WPF industrial control product that runs offline, integrates with PLC services, logs operations, supports updates with rollback, and must recover safely after restart.","graders":[{"type":"prompt"}],"rubric":["Chooses a product or modular-product architecture based on explicit boundaries.","Separates UI, application, domain, and infrastructure concerns including device communication.","Includes observability, failure-safe behavior, update rollback, and Windows validation."]},
-    {"name":"create-generic-host-integration","category":"implement","prompt":"Add Generic Host, dependency injection, configuration, and structured logging to an existing .NET 10 WPF application that currently launches through StartupUri.","graders":[{"type":"prompt"}],"rubric":["Removes StartupUri when the host owns window creation.","Defines startup, shutdown, service lifetimes, and disposal behavior.","Avoids a global service locator and validates clean application shutdown."]},
-    {"name":"modernize-net-framework-wpf","category":"modernize","prompt":"Plan a staged migration of a large .NET Framework 4.8 WPF application to .NET 10 while preserving production behavior and keeping each change reviewable.","graders":[{"type":"prompt"}],"rubric":["Establishes a reproducible baseline before changing the target framework.","Separates framework migration, package updates, architecture seams, and UI redesign into stages.","Defines rollback points, compatibility decisions, and Windows build/runtime validation."]},
-    {"name":"modernize-code-behind-monolith","category":"modernize","prompt":"Restructure an existing WPF application where database calls, business rules, and device commands are implemented directly in window code-behind. Minimize risk and avoid a big-bang rewrite.","graders":[{"type":"prompt"}],"rubric":["Introduces seams around risky external operations before moving UI code.","Moves business and infrastructure behavior incrementally with behavior-preserving tests.","Does not require rewriting all views or adopting abstractions without a concrete boundary."]},
-    {"name":"implement-background-operation","category":"implement","prompt":"Implement a cancellable long-running import operation in WPF with progress reporting, timeouts, UI responsiveness, and safe error handling.","graders":[{"type":"prompt"}],"rubric":["Keeps blocking I/O off the dispatcher and marshals only UI state changes.","Uses cancellation, progress, timeout, and idempotency or retry boundaries deliberately.","Explains exception routing and verifies cancellation and shutdown behavior."]},
-    {"name":"troubleshoot-binding-failure","category":"troubleshoot","prompt":"A WPF TextBox binding silently fails after a DataContext change. Diagnose the issue before proposing a rewrite and provide concrete validation steps.","graders":[{"type":"prompt"}],"rubric":["Inspects binding diagnostics, DataContext, property path, converter, update trigger, and notifications.","Makes the smallest coherent correction instead of replacing the view model by default.","Includes an observable regression test or repeatable manual verification."]},
-    {"name":"troubleshoot-ui-deadlock","category":"troubleshoot","prompt":"A WPF window freezes when a button invokes an async service and the code calls .Result. Determine the root cause and implement a safe correction.","graders":[{"type":"prompt"}],"rubric":["Distinguishes dispatcher deadlock or blocking waits from CPU work and external timeout.","Removes sync-over-async through an async call chain rather than recommending Task.Run universally.","Validates responsiveness, cancellation, exception flow, and repeated invocation."]},
-    {"name":"troubleshoot-memory-growth","category":"troubleshoot","prompt":"A WPF application grows in memory after repeatedly navigating between views. Produce an evidence-driven investigation and remediation plan.","graders":[{"type":"prompt"}],"rubric":["Checks event subscriptions, static references, timers, cached views, images, journals, and unmanaged resources.","Requests or uses profiling evidence before declaring the cause.","Defines a repeatable navigation stress test and an acceptance threshold."]},
-    {"name":"review-production-readiness","category":"review","prompt":"Review a .NET 10 WPF repository for production readiness, including architecture, reliability, accessibility, localization, deployment, updates, and diagnostics.","graders":[{"type":"prompt"}],"rubric":["Orders evidence-backed findings by severity and avoids generic advice.","Covers Windows-specific startup, shutdown, DPI, theme, accessibility, localization, publish, installer, and rollback checks.","Clearly separates static review, build results, automated tests, and pending manual validation."]},
-    {"name":"review-net10-compatibility","category":"review","prompt":"Review an upgraded WPF project for .NET 10 and C# 14 compatibility issues, including XAML resources, WPF and WinForms interop, and compiler behavior changes.","graders":[{"type":"prompt"}],"rubric":["Checks net10.0-windows, UseWPF, empty Grid definition collections, and DynamicResource validity.","Checks WPF/WinForms type ambiguity and relevant C# 14 contextual-keyword or overload changes.","Records whether each changed behavior is adopted, adapted, deferred, or blocks migration."]},
-    {"name":"deploy-offline-update-rollback","category":"implement","prompt":"Design an offline-capable installer and updater for a production WPF application with digital signature verification, atomic replacement, database migration compatibility, and automatic rollback.","graders":[{"type":"prompt"}],"rubric":["Keeps update replacement logic outside the running main executable.","Defines signature verification, staging, health checks, rollback, and database forward/backward compatibility.","Includes install, upgrade, repair, uninstall, failed-update, and power-loss validation."]},
-    {"name":"review-existing-repository-without-windows","category":"review","prompt":"Analyze a WPF repository from a Linux execution environment and report what can and cannot be verified before release.","graders":[{"type":"prompt"}],"rubric":["Performs static analysis and command planning without claiming a Windows build or UI run occurred.","Marks Windows compilation, startup, DPI, accessibility, installer, and runtime checks as pending.","Provides exact Windows validation commands and manual scenarios."]},
-    {"name":"negative-winui-project","category":"negative","prompt":"Create a new WinUI 3 application using the Windows App SDK and implement navigation between pages.","expect_activation":false},
-    {"name":"negative-maui-project","category":"negative","prompt":"Build a cross-platform .NET MAUI application for Android, iOS, macOS, and Windows.","expect_activation":false},
-    {"name":"negative-avalonia-project","category":"negative","prompt":"Modernize an Avalonia desktop application and improve its cross-platform XAML styling.","expect_activation":false},
-    {"name":"negative-aspnet-api","category":"negative","prompt":"Create an ASP.NET Core 10 minimal API with JWT authentication and OpenAPI documentation.","expect_activation":false},
-    {"name":"negative-winforms-only","category":"negative","prompt":"Fix layout and high-DPI problems in a Windows Forms-only application with no WPF interoperability.","expect_activation":false}
-  ]
+  "description": "Paired routing and capability evaluation for the WPF Development skill.",
+  "type": "paired-capability",
+  "score_scale": {
+    "minimum": 0,
+    "maximum": 2,
+    "labels": {
+      "0": "Missing, incorrect, unsafe, or materially unusable.",
+      "1": "Partially correct but incomplete, weakly justified, or insufficiently validated.",
+      "2": "Correct, specific, evidence-oriented, and operationally usable."
+    }
+  },
+  "release_thresholds": {
+    "positive_recall_min": 0.94,
+    "negative_specificity_min": 1.0,
+    "routing_accuracy_min": 0.96,
+    "skilled_mean_min": 0.8,
+    "mean_delta_min": 0.1,
+    "win_rate_non_ties_min": 0.7,
+    "sign_test_p_max": 0.05,
+    "bootstrap_delta_ci_low_min": 0.0,
+    "skilled_critical_failures_max": 0
+  },
+  "defaults": {
+    "timeout": "5m",
+    "runs": 1,
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 0,
+    "blind_seed": 0
+  },
+  "stimuli_path": "cases"
 }

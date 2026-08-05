@@ -1,0 +1,9 @@
+{
+  "name": "negative-console-generic-host",
+  "category": "negative",
+  "prompt": "Create a .NET 10 console worker using Generic Host, dependency injection, configuration, and structured logging with no desktop UI.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

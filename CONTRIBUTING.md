@@ -10,7 +10,7 @@ Keep contributions focused, evidence-based, secure, and verifiable.
 - Put deterministic helpers inside the skill's `scripts/` directory and test them under `tests/<skill-name>/`.
 - Add routing and capability scenarios under `evals/<skill-name>/eval.yaml`.
 - Keep shared validation and packaging utilities under `tools/`.
-- Do not commit ZIP archives, generated manifests, test outputs, credentials, private environment details, caches, or editor state.
+- Do not commit ZIP archives, generated manifests, raw model responses, blind keys, credentials, private environment details, caches, or editor state.
 
 ## Skill safety requirements
 
@@ -64,13 +64,15 @@ On Windows, also execute the scaffold with a supported .NET 10 SDK and build/tes
 
 Every directly invokable skill needs an evaluation specification with:
 
-- at least 15 discriminating scenarios
-- at least 10 expected-activation scenarios
+- at least 20 discriminating scenarios
+- at least 12 expected-activation scenarios
 - at least 5 expected-non-activation scenarios
 - coverage of every primary workflow declared in `SKILL.md`
-- rubrics that test decisions and validation behavior, not merely keyword inclusion
+- at least 4 critical production scenarios
+- at least 3 decision-oriented rubric items for every positive scenario
+- explicit routing and stable-release thresholds
 
-Repository validation checks the specification. A stable release additionally requires external model-versus-baseline runs and recorded results.
+Repository validation checks the specification. A stable release additionally requires paired baseline-versus-skilled response collection, blind A/B judging, a non-synthetic passing report, and a package SHA-256 match. Follow `evals/<skill-name>/README.md`.
 
 ## Pull requests
 

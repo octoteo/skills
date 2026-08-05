@@ -33,6 +33,12 @@ jobs:
       - name: Verify checksum
         working-directory: .artifacts/wpf-development
         run: sha256sum --check skill.zip.sha256
+      - name: Validate prerelease gate plumbing
+        run: |
+          python tools/check_release.py \
+            --tag wpf-development-v0.0.0-ci.1 \
+            --manifest .artifacts/wpf-development/manifest.json \
+            --results-root eval-results
       - name: Upload ephemeral package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

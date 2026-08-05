@@ -30,27 +30,49 @@ jobs:
       - name: Verify release checksum
         working-directory: .artifacts/wpf-development
         run: sha256sum --check skill.zip.sha256
+      - name: Enforce tag and stable evaluation gate
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          python tools/check_release.py \
+            --tag "$GITHUB_REF_NAME" \
+            --manifest .artifacts/wpf-development/manifest.json \
+            --results-root eval-results
+      - name: Prepare release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release
+          cp .artifacts/wpf-development/skill.zip .artifacts/release/
+          cp .artifacts/wpf-development/skill.zip.sha256 .artifacts/release/
+          cp .artifacts/wpf-development/manifest.json .artifacts/release/
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            version="${GITHUB_REF_NAME#wpf-development-v}"
+            result_dir="eval-results/wpf-development/${version}"
+            if [[ -f "${result_dir}/summary.json" ]]; then
+              cp "${result_dir}/summary.json" .artifacts/release/evaluation-summary.json
+              cp "${result_dir}/report.md" .artifacts/release/evaluation-report.md
+            fi
+          fi
       - name: Attest skill package provenance
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
-          subject-path: .artifacts/wpf-development/skill.zip
+          subject-path: .artifacts/release/skill.zip
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: wpf-development-release-${{ github.sha }}
-          path: |
-            .artifacts/wpf-development/skill.zip
-            .artifacts/wpf-development/skill.zip.sha256
-            .artifacts/wpf-development/manifest.json
+          path: .artifacts/release/
           if-no-files-found: error
       - name: Create or update GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes --title "$GITHUB_REF_NAME"
-          gh release upload "$GITHUB_REF_NAME" \
-            .artifacts/wpf-development/skill.zip \
-            .artifacts/wpf-development/skill.zip.sha256 \
-            .artifacts/wpf-development/manifest.json \
-            --clobber
+          set -euo pipefail
+          release_args=(--generate-notes --title "$GITHUB_REF_NAME")
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            release_args+=(--prerelease)
+          fi
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" "${release_args[@]}"
+          gh release upload "$GITHUB_REF_NAME" .artifacts/release/* --clobber

@@ -27,7 +27,10 @@ def load_validator():
 
 
 def source_files(skill_dir: Path) -> list[Path]:
-    return [path for path in sorted(skill_dir.rglob("*"), key=lambda item: item.relative_to(skill_dir).as_posix()) if path.is_file() and not path.is_symlink()]
+    return [
+        path for path in sorted(skill_dir.rglob("*"), key=lambda item: item.relative_to(skill_dir).as_posix())
+        if path.is_file() and not path.is_symlink()
+    ]
 
 
 def sha256_file(path: Path) -> str:
@@ -44,10 +47,12 @@ def create_package(skill_dir: Path, output_dir: Path) -> tuple[Path, Path, Path]
     zip_path = output_dir / "skill.zip"
     checksum_path = output_dir / "skill.zip.sha256"
     manifest_path = output_dir / "manifest.json"
+
     validator = load_validator()
     errors = validator.validate(skill_dir)
     if errors:
         raise ValueError("skill validation failed:\n" + "\n".join(f"- {item}" for item in errors))
+
     entries: list[dict[str, object]] = []
     files = source_files(skill_dir)
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9, strict_timestamps=True) as archive:
@@ -63,10 +68,31 @@ def create_package(skill_dir: Path, output_dir: Path) -> tuple[Path, Path, Path]
             info.compress_type = zipfile.ZIP_DEFLATED
             info.flag_bits |= 0x800
             archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
-            entries.append({"path": archive_name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+            entries.append({
+                "path": archive_name,
+                "size": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(),
+            })
+
     archive_hash = sha256_file(zip_path)
+    content_digest = hashlib.sha256()
+    for entry in entries:
+        content_digest.update(str(entry["path"]).encode("utf-8"))
+        content_digest.update(b"\0")
+        content_digest.update(str(entry["sha256"]).encode("ascii"))
+        content_digest.update(b"\n")
     checksum_path.write_text(f"{archive_hash}  skill.zip\n", encoding="ascii", newline="\n")
-    manifest = {"schema_version": 1, "skill": skill_dir.name, "archive": "skill.zip", "archive_sha256": archive_hash, "file_count": len(entries), "files": entries}
+    manifest = {
+        "schema_version": 1,
+        "format": "chatgpt-agent-skill",
+        "reproducible": True,
+        "skill": skill_dir.name,
+        "skill_content_sha256": content_digest.hexdigest(),
+        "archive": "skill.zip",
+        "archive_sha256": archive_hash,
+        "file_count": len(entries),
+        "files": entries,
+    }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return zip_path, checksum_path, manifest_path
 

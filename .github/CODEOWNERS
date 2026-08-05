@@ -2,5 +2,8 @@
 /wpf-development/ @octoteo
 /tests/wpf-development/ @octoteo
 /evals/wpf-development/ @octoteo
+/eval-results/ @octoteo
 /tools/ @octoteo
 /.github/workflows/ @octoteo
+/QUALITY.md @octoteo
+/RELEASING.md @octoteo

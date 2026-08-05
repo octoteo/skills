@@ -12,6 +12,7 @@
 - [ ] `python tools/run_tests.py`
 - [ ] `python tools/package_skill.py wpf-development .artifacts/wpf-development`
 - [ ] Windows-specific checks completed or explicitly marked pending
+- [ ] Evaluation specification and release evidence updated when behavior or routing changed
 
 ## Risk
 

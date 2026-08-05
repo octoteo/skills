@@ -1,0 +1,17 @@
+{
+  "name": "modernize-code-behind-monolith",
+  "category": "modernize",
+  "prompt": "Restructure an existing WPF application where database calls, business rules, and device commands are implemented directly in window code-behind. Minimize risk and avoid a big-bang rewrite.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Introduces seams around risky external operations before moving UI code.",
+    "Moves business and infrastructure behavior incrementally with behavior-preserving tests.",
+    "Does not require rewriting all views or adopting abstractions without a concrete boundary."
+  ]
+}

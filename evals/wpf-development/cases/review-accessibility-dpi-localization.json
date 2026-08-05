@@ -1,0 +1,17 @@
+{
+  "name": "review-accessibility-dpi-localization",
+  "category": "review",
+  "prompt": "Audit a production WPF operator console for keyboard access, screen-reader naming, high contrast, 100 to 200 percent DPI, text expansion, and right-to-left localization.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Defines evidence-based checks for keyboard navigation, focus order, automation names, and critical control semantics.",
+    "Covers high contrast, theme resources, scaling, clipping, text expansion, and right-to-left behavior.",
+    "Separates automated accessibility checks from required Windows manual verification."
+  ]
+}

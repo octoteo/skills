@@ -1,0 +1,17 @@
+{
+  "name": "troubleshoot-ui-deadlock",
+  "category": "troubleshoot",
+  "prompt": "A WPF window freezes when a button invokes an async service and the code calls .Result. Determine the root cause and implement a safe correction.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Distinguishes dispatcher deadlock or blocking waits from CPU work and external timeout.",
+    "Removes sync-over-async through an async call chain rather than recommending Task.Run universally.",
+    "Validates responsiveness, cancellation, exception flow, and repeated invocation."
+  ]
+}

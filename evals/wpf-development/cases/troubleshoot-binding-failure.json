@@ -1,0 +1,17 @@
+{
+  "name": "troubleshoot-binding-failure",
+  "category": "troubleshoot",
+  "prompt": "A WPF TextBox binding silently fails after a DataContext change. Diagnose the issue before proposing a rewrite and provide concrete validation steps.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Inspects binding diagnostics, DataContext, property path, converter, update trigger, and notifications.",
+    "Makes the smallest coherent correction instead of replacing the view model by default.",
+    "Includes an observable regression test or repeatable manual verification."
+  ]
+}
