@@ -97,7 +97,7 @@ Execute only after reviewing the destination and commands:
 python <skill-dir>/scripts/scaffold_wpf_solution.py <destination> --name ProductName --execute
 ```
 
-The helper requires Windows and a .NET 10 SDK for execution. It creates project boundaries but intentionally does not pin external package versions without explicit arguments.
+The helper requires Windows and a .NET 10 SDK for execution. It creates project boundaries but intentionally does not pin external package versions without explicit arguments. If execution fails, it removes only the newly owned scaffold root by default; pass `--keep-on-failure` only when the partial output is needed for diagnosis.
 
 ### 4. Configure the application host
 
