@@ -78,8 +78,8 @@ class EvaluationToolingTests(unittest.TestCase):
 
     def test_spec_has_production_sized_case_set(self) -> None:
         _, cases = evaluator.load_spec(SPEC)
-        self.assertEqual(len(cases), 25)
-        self.assertEqual(sum(case.expect_activation for case in cases), 18)
+        self.assertEqual(len(cases), 27)
+        self.assertEqual(sum(case.expect_activation for case in cases), 20)
         self.assertEqual(sum(not case.expect_activation for case in cases), 7)
 
     def test_init_creates_two_records_per_case(self) -> None:
