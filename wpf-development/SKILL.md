@@ -40,6 +40,8 @@ When a repository is available, discover these inputs directly instead of asking
 - MVVM implementation, dependency injection, navigation, persistence, and background services
 - build, test, format, publish, installer, and CI commands
 - deployment targets, CPU architectures, update model, offline constraints, and rollback requirements
+- trust boundaries, privileged actions, secret storage, and data sensitivity
+- device, PLC, robot, scanner, camera, or gateway ownership and safety boundaries
 - existing warnings, failing tests, and operational incidents
 
 Run the bundled inspector for an initial inventory when code access is available:
@@ -63,13 +65,15 @@ Load references progressively:
 | .NET 10 and C# 14 WPF-specific capabilities and compatibility checks | `references/dotnet10.md` |
 | Unit, integration, UI, binding, accessibility, performance, and release tests | `references/testing-and-quality.md` |
 | Publishing, installers, updates, rollback, configuration, logs, and recovery | `references/deployment-and-reliability.md` |
+| Trust boundaries, secrets, IPC, embedded web content, signing, and secure updates | `references/security.md` |
+| PLC, robot, scanner, camera, gateway, recipe, telemetry, and offline device workflows | `references/industrial-and-device-integration.md` |
 | Source freshness and official-document verification rules | `references/source-policy.md` |
 
 ## Create workflow
 
 ### 1. Establish constraints
 
-Record the product type, expected lifetime, team size, offline requirements, device integration, data sensitivity, deployment model, supported Windows versions, CPU architectures, localization, accessibility, and update constraints.
+Record the product type, expected lifetime, team size, offline requirements, device integration, data sensitivity, trust boundaries, privileged actions, deployment model, supported Windows versions, CPU architectures, localization, accessibility, and update constraints. For industrial products, record which controller owns authoritative state and which safety functions remain outside the WPF client.
 
 Do not assume a complex modular platform for a small utility. Do not assume a single-project app for a long-lived industrial or enterprise product.
 
@@ -88,16 +92,16 @@ Document why the chosen tier is sufficient. Avoid repository, mediator, event-bu
 Use the bundled scaffold helper to preview commands:
 
 ```bash
-python <skill-dir>/scripts/scaffold_wpf_solution.py <destination> --name ProductName --dry-run
+python <skill-dir>/scripts/scaffold_wpf_solution.py <destination> --name ProductName --tier product --dry-run
 ```
 
 Execute only after reviewing the destination and commands:
 
 ```bash
-python <skill-dir>/scripts/scaffold_wpf_solution.py <destination> --name ProductName --execute
+python <skill-dir>/scripts/scaffold_wpf_solution.py <destination> --name ProductName --tier product --execute
 ```
 
-The helper requires Windows and a .NET 10 SDK for execution. It creates project boundaries but intentionally does not pin external package versions without explicit arguments. If execution fails, it removes only the newly owned scaffold root by default; pass `--keep-on-failure` only when the partial output is needed for diagnosis.
+Choose `--tier compact`, `--tier product`, or `--tier modular` from the architecture decision. The helper requires Windows and a .NET 10 SDK for execution, builds and tests in Release configuration, and intentionally does not pin external package versions without explicit arguments. If execution fails, it removes only a newly owned scaffold root; it preserves a pre-existing empty destination and honors `--keep-on-failure` when partial output is needed for diagnosis.
 
 ### 4. Configure the application host
 
@@ -118,6 +122,8 @@ For a tiny application without configuration, logging, or background services, a
 - Keep view models free of `Window`, `MessageBox`, and direct dispatcher dependencies where practical.
 - Put domain decisions in Core/Application services.
 - Put file system, database, network, device, and operating-system access behind infrastructure interfaces.
+- Enforce authorization and privileged decisions outside views; disabled or hidden controls are not security boundaries.
+- For device commands, distinguish request, transport acknowledgment, controller acceptance, completion, timeout, and unknown final state.
 - Marshal only UI mutations to the dispatcher; do not wrap entire I/O operations in dispatcher calls.
 - Prefer cancellation, progress, timeouts, and idempotent commands for long-running operations.
 - Treat design-time data, accessibility names, keyboard navigation, focus behavior, DPI scaling, theme, and localization as first-class requirements.
@@ -129,6 +135,8 @@ For a tiny application without configuration, logging, or background services, a
 - Distinguish recoverable operation failures from fatal process state.
 - Provide user-safe error messages while preserving technical diagnostics in logs.
 - Avoid continuing after failures that may have corrupted shared state.
+- Redact secrets and sensitive payloads from logs, crash reports, and support bundles.
+- Mark stale, simulated, estimated, or unavailable device data instead of presenting it as live.
 
 ### 7. Validate
 
@@ -177,7 +185,7 @@ Use the smallest safe sequence:
 8. Improve logging, cancellation, recovery, and deployment.
 9. Remove obsolete compatibility code only after behavior is verified.
 
-Read `references/modernization.md` before planning a broad restructure.
+Read `references/modernization.md` before planning a broad restructure. Load `references/security.md` when the repository handles credentials, privileged commands, IPC, imports, embedded web content, or self-updates. Load `references/industrial-and-device-integration.md` when physical equipment or operational recipes are involved.
 
 ### 4. Apply .NET 10-specific checks
 
@@ -217,6 +225,8 @@ For hangs, separate dispatcher deadlock, synchronous wait, lock contention, bloc
 
 For memory growth, inspect event subscriptions, static references, timers, collections, cached views, image sources, navigation journals, and unmanaged resource disposal.
 
+For device or PLC failures, separate transport connectivity, protocol acknowledgment, controller acceptance, process completion, stale telemetry, and state reconciliation. Never infer physical success from a successful write alone.
+
 ## Architecture rules
 
 - Prefer constructor injection.
@@ -228,6 +238,9 @@ For memory growth, inspect event subscriptions, static references, timers, colle
 - Keep database transactions and device commands outside view models.
 - Use compile-time module registration by default. Use runtime plugins only when independent deployment is required.
 - Keep update logic outside the main executable when atomic replacement or rollback requires it.
+- Keep secrets out of plain-text configuration and enforce privileged actions in the owning service or application layer.
+- Treat local IPC, imported files, embedded web content, vendor SDKs, and update channels as explicit trust boundaries.
+- Keep functional-safety decisions in the appropriate certified controller and safety architecture, not in WPF presentation logic.
 
 ## Validation matrix
 
@@ -252,6 +265,8 @@ Validate on Windows:
 - keyboard-only navigation and screen-reader names for critical controls
 - supported locales, right-to-left layout when applicable, and text expansion
 - offline startup and degraded external dependencies
+- authorization, secret redaction, import validation, IPC access control, and signed-update verification
+- device reconnect, stale-data indication, duplicate-command protection, and authoritative-state reconciliation where applicable
 - publish output for each supported runtime identifier
 - installer install, upgrade, repair, uninstall, and rollback paths
 

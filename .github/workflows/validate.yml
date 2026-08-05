@@ -51,8 +51,18 @@ jobs:
           retention-days: 14
 
   windows-wpf:
-    name: Windows .NET 10 WPF execution
+    name: Windows .NET 10 WPF - ${{ matrix.tier }}
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tier: compact
+            product_name: Production.Compact
+          - tier: product
+            product_name: Production.Product
+          - tier: modular
+            product_name: Production.Modular
     steps:
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -66,21 +76,22 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Run repository tests on Windows
         run: python tools/run_tests.py
-      - name: Execute WPF solution scaffold
+      - name: Execute and inspect WPF solution scaffold
         shell: pwsh
         run: |
-          $destination = Join-Path $env:RUNNER_TEMP 'wpf-scaffold'
-          python wpf-development/scripts/scaffold_wpf_solution.py $destination --name Production.Sample --solution-format slnx --execute
-          $solution = Join-Path $destination 'Production.Sample/Production.Sample.slnx'
+          $destination = Join-Path $env:RUNNER_TEMP 'wpf-scaffold-${{ matrix.tier }}'
+          python wpf-development/scripts/scaffold_wpf_solution.py $destination --name '${{ matrix.product_name }}' --tier '${{ matrix.tier }}' --solution-format slnx --execute
+          $root = Join-Path $destination '${{ matrix.product_name }}'
+          $solution = Join-Path $root '${{ matrix.product_name }}.slnx'
           dotnet restore $solution
           dotnet build $solution --no-restore --configuration Release
           dotnet test $solution --no-build --configuration Release
-          python wpf-development/scripts/inspect_wpf_project.py (Join-Path $destination 'Production.Sample') --format json --output (Join-Path $env:RUNNER_TEMP 'wpf-inspection.json') --strict
+          python wpf-development/scripts/inspect_wpf_project.py $root --format json --output (Join-Path $env:RUNNER_TEMP 'wpf-inspection-${{ matrix.tier }}.json') --strict
       - name: Upload Windows inspection report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: wpf-windows-validation-${{ github.sha }}
-          path: ${{ runner.temp }}/wpf-inspection.json
+          name: wpf-windows-validation-${{ matrix.tier }}-${{ github.sha }}
+          path: ${{ runner.temp }}/wpf-inspection-${{ matrix.tier }}.json
           if-no-files-found: warn
           retention-days: 14

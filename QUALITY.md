@@ -17,12 +17,13 @@ A release is eligible for publication only when every applicable gate passes aga
 - The package contains exactly one skill root and excludes repository tests and tooling.
 - The package checksum and manifest match the generated archive.
 - Evaluation and release tooling tests cover incomplete evidence, synthetic evidence, package mismatch, and stable-tag rejection.
+- Repository inspection tests cover inherited MSBuild properties, central package versions, project-reference integrity, redacted secret findings, and architecture-tier planning.
 
 ## WPF execution gates
 
-- The scaffold runs on a Windows runner with a .NET 10 SDK.
-- The generated solution restores, builds in Release configuration, and tests successfully.
-- The generated repository is inspected by the bundled WPF inspector.
+- Compact, Product, and Modular scaffolds run on Windows with a .NET 10 SDK.
+- Every generated solution restores, builds in Release configuration, and tests successfully.
+- Every generated repository is inspected by the bundled WPF inspector in strict mode.
 - Windows execution failures are not replaced by Linux-only claims.
 
 ## Skill behavior gates
@@ -36,7 +37,7 @@ The evaluation specification must include at least:
 - 4 critical production scenarios
 - 3 decision-oriented rubric items for each positive scenario
 
-The current `wpf-development` suite contains 25 scenarios: 18 positive and 7 negative.
+The current `wpf-development` suite contains 27 scenarios: 20 positive and 7 negative. It includes explicit security-boundary and industrial command-reconciliation cases.
 
 A stable release must be evaluated through paired blind judging against the exact package SHA-256. All current thresholds must pass:
 

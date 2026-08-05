@@ -9,9 +9,9 @@ The evaluation separates two independent properties:
 1. **Routing**: whether the installed skill activates for WPF work and remains inactive for adjacent non-WPF work.
 2. **Capability**: whether the response produced with the skill is materially better than the response produced by the same model without the skill.
 
-The current suite contains 25 scenarios:
+The current suite contains 27 scenarios:
 
-- 18 expected-activation scenarios across create, modernize, implement, review, and troubleshoot work
+- 20 expected-activation scenarios across create, modernize, implement, review, troubleshoot, security, and industrial device work
 - 7 expected-non-activation scenarios covering WinUI, MAUI, Avalonia, ASP.NET Core, WinForms-only, console-host, and .NET Framework-only work
 
 ## Evidence rules
@@ -36,7 +36,7 @@ Do not edit a response after seeing the paired alternative or the judge result. 
 - **1**: Partially correct but incomplete, weakly justified, or insufficiently validated.
 - **2**: Correct, specific, evidence-oriented, and operationally usable.
 
-A critical failure is a separate boolean. Use it when the response recommends a materially unsafe production action, fabricates validation, destroys rollback capability, or violates an explicit platform boundary.
+A critical failure is a separate boolean. Use it when the response recommends a materially unsafe production action, fabricates validation, destroys rollback capability, duplicates a physical effect, leaks secrets, or violates an explicit platform or safety boundary.
 
 ## Run the evaluation
 
@@ -142,4 +142,4 @@ eval-results/wpf-development/<version>/
 └── report.md
 ```
 
-Before committing evidence, remove confidential repository paths, user data, credentials, or proprietary source excerpts. The stable release workflow verifies that the summary package SHA-256 matches the newly built package.
+Before committing evidence, remove confidential repository paths, user data, credentials, proprietary source excerpts, and sensitive device payloads. The stable release workflow verifies that the summary package SHA-256 matches the newly built package.

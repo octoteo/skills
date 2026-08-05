@@ -8,7 +8,7 @@ A public collection of reusable Agent Skills maintained by [octoteo](https://git
 |---|---|---|
 | [`wpf-development`](wpf-development/) | Beta | Build, modernize, review, and troubleshoot production WPF applications. The current default baseline is .NET 10 and C# 14. |
 
-`wpf-development` is engineering-hardened for packaging, deterministic scripts, Linux validation, and real Windows WPF execution. It remains Beta until a non-synthetic paired model evaluation passes every stable-release threshold.
+`wpf-development` is engineering-hardened for deterministic packaging, repository analysis, three-tier scaffolding, Linux validation, and real Windows WPF execution. It remains Beta until a non-synthetic paired model evaluation passes every stable-release threshold.
 
 ## Repository layout
 
@@ -42,14 +42,17 @@ Every direct child directory containing `SKILL.md` is treated as an installable 
 
 The skill supports both greenfield and existing-codebase work:
 
-- choose a compact, product, or modular-product architecture based on real constraints
-- create .NET 10 WPF solution boundaries through a dry-run-first scaffold
+- choose Compact, Product, or Modular Product architecture based on real constraints
+- create each architecture tier through a dry-run-first .NET 10 scaffold
+- inspect effective repository configuration from project files, `Directory.Build.props`, `Directory.Packages.props`, and `global.json`
+- detect missing and cyclic project references, unresolved package versions, risky publish settings, and redacted secret findings
 - modernize existing WPF applications incrementally while preserving behavior
 - apply MVVM, Generic Host, dependency injection, configuration, and logging deliberately
-- diagnose XAML, binding, dispatcher, startup, shutdown, memory, and packaging problems
+- diagnose XAML, binding, dispatcher, startup, shutdown, memory, packaging, and project-graph problems
+- review trust boundaries, local IPC, imported files, embedded web content, signed updates, secrets, and support-bundle privacy
+- design PLC and device command lifecycles, idempotency, stale-state handling, reconnect reconciliation, recipes, and simulation boundaries
 - improve testing, accessibility, localization, observability, deployment, updates, and rollback
 - account for .NET 10 WPF and C# 14 capabilities and compatibility changes
-- handle explicit WPF and Windows Forms interoperability boundaries without treating WinForms-only work as WPF
 
 The skill name is intentionally version-neutral. .NET 10 is the current implementation baseline and can be advanced later without changing the skill identity or install path.
 
@@ -90,8 +93,8 @@ The repository enforces:
 - internal reference and icon existence
 - rejection of hidden files, symbolic links, credential-like files, secret-like content, path collisions, caches, and oversized files
 - deterministic ZIP timestamps, ordering, permissions, compression, checksum, and manifest
-- Linux repository tests and a Windows job that executes the scaffold and builds/tests the generated .NET 10 WPF solution
-- a 25-case routing and capability suite with 18 positive and 7 negative scenarios
+- Linux repository tests and Windows jobs that execute, build, test, and inspect Compact, Product, and Modular WPF scaffolds
+- a 27-case routing and capability suite with 20 positive and 7 negative scenarios
 - blind A/B judging, 0–2 rubric scoring, paired bootstrap confidence intervals, and an exact sign test
 - a release checker that rejects synthetic, failing, missing, or package-mismatched stable evidence
 - full-commit SHA pinning for GitHub Actions
