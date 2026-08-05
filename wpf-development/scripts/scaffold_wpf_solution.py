@@ -97,7 +97,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="Print commands only. This is the default.")
     mode.add_argument("--execute", action="store_true", help="Execute commands. Requires Windows and .NET 10 SDK.")
+    parser.add_argument("--keep-on-failure", action="store_true", help="Keep a partially created solution when execution fails. The default removes only the new empty destination root.")
     return parser.parse_args(argv)
+
+
+def cleanup_partial_root(root: Path, destination: Path, name: str) -> bool:
+    """Remove only the scaffold root that this invocation is allowed to own."""
+    destination = destination.resolve()
+    root = root.resolve()
+    if root.name != name or root.parent != destination or root == destination:
+        return False
+    if root.exists():
+        shutil.rmtree(root)
+    return True
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -144,6 +156,14 @@ def main(argv: list[str] | None = None) -> int:
             run_command(command)
     except subprocess.CalledProcessError as exc:
         print(f"error: command failed with exit code {exc.returncode}", file=sys.stderr)
+        if not args.keep_on_failure:
+            try:
+                removed = cleanup_partial_root(root, args.destination, name)
+            except OSError as cleanup_error:
+                print(f"warning: partial scaffold cleanup failed: {cleanup_error}", file=sys.stderr)
+            else:
+                if removed:
+                    print(f"Removed partial scaffold: {root}", file=sys.stderr)
         return exc.returncode or 1
 
     print("\nScaffold completed. Integrate Generic Host, configuration, logging, navigation, and product-specific reliability requirements before production use.")
