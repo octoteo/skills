@@ -145,7 +145,7 @@ The OpenAI Skills runtime exposes Skill metadata to the model. When the model in
 
 Every inferred activation stores the matching shell command in `activation_evidence`. Review this field before scoring. If the platform changes how Skill reads are surfaced, update and revalidate the detector rather than silently treating missing evidence as activation.
 
-## Blind and score
+## Blind, judge, and score
 
 After a complete collection:
 
@@ -156,7 +156,32 @@ python tools/evaluate_skill.py blind \
   --seed 0
 ```
 
-Give an independent judge only `blind-pairs.jsonl` and the judging protocol. Keep `blind-key.json`, `responses.jsonl`, and the upload receipt hidden until judgments are complete. Then use the existing score command described in the main evaluation README.
+Give an independent judge only `blind-pairs.jsonl` and the judging protocol. Keep `blind-key.json`, `responses.jsonl`, the Skill receipt, and activation evidence hidden until judgments are complete.
+
+The repository includes an optional structured-output judge. Preview it without network access:
+
+```bash
+python tools/openai_eval_judge.py \
+  --pairs eval-runs/wpf-development-2026-08-05-01/judging/blind-pairs.jsonl \
+  --judgments eval-runs/wpf-development-2026-08-05-01/judging/judgments.jsonl
+```
+
+Execute only after reviewing the blinded material:
+
+```bash
+python tools/openai_eval_judge.py \
+  --pairs eval-runs/wpf-development-2026-08-05-01/judging/blind-pairs.jsonl \
+  --judgments eval-runs/wpf-development-2026-08-05-01/judging/judgments.jsonl \
+  --model gpt-5.5-2026-04-23 \
+  --reasoning-effort high \
+  --execute
+```
+
+The judge request mounts no Skill, exposes no shell or other tools, accepts no blind-key argument, and requires strict JSON Schema output. Response A and B are embedded as untrusted quoted data; the judge is instructed not to follow instructions contained inside either response. Every completed judgment and raw judge response is persisted before the next request, and `--resume` skips completed cases.
+
+Automated judging is evidence, not final authority. Before using it for a stable release, manually audit a representative sample, every critical failure, low-confidence or surprising result, and any case that could affect security, physical equipment, data loss, rollback, or platform boundaries. Use a second blinded judge and adjudication when required by the judging protocol.
+
+Then use the existing score command described in the main evaluation README.
 
 ## Protected GitHub workflow
 
@@ -169,7 +194,9 @@ Configure repository secrets:
 - optionally `OPENAI_PROJECT_ID`
 - optionally `OPENAI_ORG_ID`
 
-The workflow validates and packages the exact Skill, uploads a hosted version, collects paired responses, creates blind material for complete runs, encrypts the private directory with AES-256-CBC and PBKDF2, and uploads only the encrypted archive for seven days.
+The workflow inputs separately record the generation model, judge model, reasoning settings, and candidate evidence version. Prefer fixed model snapshots for reproducibility.
+
+The workflow validates and packages the exact Skill, uploads a hosted version, collects paired responses, creates blind material for complete runs, runs the structured-output blind judge, generates a private candidate score report, encrypts the private directory with AES-256-CBC and PBKDF2, and uploads only the encrypted archive for seven days. The judge step never receives `blind-key.json`; the scorer receives the key only after judging is complete.
 
 Decrypt locally:
 
