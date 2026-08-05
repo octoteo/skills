@@ -1,0 +1,182 @@
+name: Collect OpenAI Skill evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Responses API model with hosted shell and Skills support
+        required: true
+        default: gpt-5.5-2026-04-23
+        type: string
+      reasoning_effort:
+        description: Reasoning effort used identically for baseline and skilled requests
+        required: true
+        default: medium
+        type: choice
+        options: [low, medium, high, xhigh]
+      case_limit:
+        description: Number of cases to collect; 0 runs the complete suite
+        required: true
+        default: '0'
+        type: string
+      skill_id:
+        description: Optional existing hosted Skill id; when set, upload a new version instead of creating another Skill
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: model-eval-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: Encrypted paired response collection
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
+      OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      EVAL_ARTIFACT_PASSPHRASE: ${{ secrets.EVAL_ARTIFACT_PASSPHRASE }}
+      MODEL: ${{ inputs.model }}
+      REASONING_EFFORT: ${{ inputs.reasoning_effort }}
+      CASE_LIMIT: ${{ inputs.case_limit }}
+      EXISTING_SKILL_ID: ${{ inputs.skill_id }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Require protected secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+            echo '::error::Configure the OPENAI_API_KEY repository secret before dispatching this workflow.'
+            exit 1
+          fi
+          if [[ -z "${EVAL_ARTIFACT_PASSPHRASE:-}" ]]; then
+            echo '::error::Configure the EVAL_ARTIFACT_PASSPHRASE repository secret before dispatching this workflow.'
+            exit 1
+          fi
+          if [[ ! "${CASE_LIMIT}" =~ ^[0-9]+$ ]]; then
+            echo '::error::case_limit must be a non-negative integer.'
+            exit 1
+          fi
+      - name: Validate and package exact Skill
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/validate_repository.py
+          python tools/run_tests.py
+          python tools/package_skill.py wpf-development .artifacts/wpf-development
+          (cd .artifacts/wpf-development && sha256sum --check skill.zip.sha256)
+      - name: Prepare private run paths
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id="wpf-development-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_RUN_ID}"
+          private_root="${RUNNER_TEMP}/skill-eval-private/${run_id}"
+          mkdir -p "${private_root}/receipt" "${private_root}/run"
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+          echo "private_root=${private_root}" >> "${GITHUB_OUTPUT}"
+      - name: Upload exact hosted Skill version
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            python tools/openai_eval_collect.py upload
+            --package .artifacts/wpf-development/skill.zip
+            --manifest .artifacts/wpf-development/manifest.json
+            --output "${{ steps.plan.outputs.private_root }}/receipt/skill-receipt.json"
+            --execute
+          )
+          if [[ -n "${EXISTING_SKILL_ID}" ]]; then
+            args+=(--skill-id "${EXISTING_SKILL_ID}")
+          fi
+          "${args[@]}"
+      - name: Collect paired baseline and skilled responses
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            python tools/openai_eval_collect.py collect
+            --receipt "${{ steps.plan.outputs.private_root }}/receipt/skill-receipt.json"
+            --manifest .artifacts/wpf-development/manifest.json
+            --output "${{ steps.plan.outputs.private_root }}/run"
+            --run-id "${{ steps.plan.outputs.run_id }}"
+            --model "${MODEL}"
+            --reasoning-effort "${REASONING_EFFORT}"
+            --execute
+          )
+          if [[ "${CASE_LIMIT}" != "0" ]]; then
+            args+=(--max-cases "${CASE_LIMIT}")
+          fi
+          "${args[@]}"
+      - name: Create blind judging material for complete runs
+        if: ${{ inputs.case_limit == '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/evaluate_skill.py blind \
+            --responses "${{ steps.plan.outputs.private_root }}/run/responses.jsonl" \
+            --output "${{ steps.plan.outputs.private_root }}/run/judging" \
+            --seed 0
+      - name: Encrypt private evaluation evidence
+        id: encrypt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_root="${{ steps.plan.outputs.private_root }}"
+          if [[ ! -d "${private_root}" ]]; then
+            echo '::warning::No evaluation directory was created.'
+            exit 0
+          fi
+          archive="${RUNNER_TEMP}/${{ steps.plan.outputs.run_id }}.tar.gz"
+          encrypted="${archive}.enc"
+          tar -czf "${archive}" -C "$(dirname "${private_root}")" "$(basename "${private_root}")"
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 \
+            -in "${archive}" -out "${encrypted}" -pass env:EVAL_ARTIFACT_PASSPHRASE
+          sha256sum "${encrypted}" > "${encrypted}.sha256"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          metadata = {
+              "schema_version": 1,
+              "run_id": os.environ["RUN_ID"],
+              "model": os.environ["MODEL"],
+              "reasoning_effort": os.environ["REASONING_EFFORT"],
+              "case_limit": int(os.environ["CASE_LIMIT"]),
+              "source_commit": os.environ["GITHUB_SHA"],
+              "encrypted": True,
+              "cipher": "AES-256-CBC/PBKDF2-SHA256",
+              "pbkdf2_iterations": 200000,
+          }
+          Path(os.environ["METADATA_PATH"]).write_text(
+              json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          PY
+          rm -f "${archive}"
+          echo "encrypted=${encrypted}" >> "${GITHUB_OUTPUT}"
+        env:
+          RUN_ID: ${{ steps.plan.outputs.run_id }}
+          METADATA_PATH: ${{ runner.temp }}/${{ steps.plan.outputs.run_id }}.metadata.json
+      - name: Upload encrypted evidence only
+        if: ${{ always() && steps.encrypt.outputs.encrypted != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: encrypted-${{ steps.plan.outputs.run_id }}
+          path: |
+            ${{ steps.encrypt.outputs.encrypted }}
+            ${{ steps.encrypt.outputs.encrypted }}.sha256
+            ${{ runner.temp }}/${{ steps.plan.outputs.run_id }}.metadata.json
+          if-no-files-found: error
+          retention-days: 7
