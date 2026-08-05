@@ -29,6 +29,7 @@ RESERVED_WINDOWS_NAMES = {
 class Command:
     args: tuple[str, ...]
     cwd: Path
+    retarget_project: Path | None = None
 
 
 def sanitize_name(value: str) -> str:
@@ -92,7 +93,14 @@ def build_commands(
         project = layout[key]
         commands.append(Command(("dotnet", "new", "classlib", "-n", project, "-o", f"src/{project}", "--framework", "net10.0"), root))
 
-    commands.append(Command(("dotnet", "new", "mstest", "-n", layout["tests"], "-o", f"tests/{layout['tests']}", "--framework", "net10.0"), root))
+    test_project = root / f"tests/{layout['tests']}/{layout['tests']}.csproj"
+    commands.append(
+        Command(
+            ("dotnet", "new", "mstest", "-n", layout["tests"], "-o", f"tests/{layout['tests']}", "--framework", "net10.0"),
+            root,
+            test_project if tier == "compact" else None,
+        )
+    )
 
     project_paths = [f"src/{layout['app']}/{layout['app']}.csproj"]
     project_paths.extend(f"src/{layout[key]}/{layout[key]}.csproj" for key in class_library_keys)
@@ -177,10 +185,33 @@ def dotnet_major_version() -> int | None:
     return int(match.group(1)) if match else None
 
 
+def retarget_project_to_windows(path: Path) -> None:
+    """Retarget a generated test project so it can reference a WPF application."""
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except OSError as exc:
+        raise RuntimeError(f"cannot read generated test project {path}: {exc}") from exc
+    updated, count = re.subn(
+        r"(<TargetFramework>\s*)net10\.0(\s*</TargetFramework>)",
+        r"\1net10.0-windows\2",
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise RuntimeError(f"generated test project does not contain the expected net10.0 TargetFramework: {path}")
+    try:
+        path.write_text(updated, encoding="utf-8", newline="\n")
+    except OSError as exc:
+        raise RuntimeError(f"cannot retarget generated test project {path}: {exc}") from exc
+
+
 def run_command(command: Command) -> None:
     command.cwd.mkdir(parents=True, exist_ok=True)
     print(f"[{command.cwd}] {' '.join(quote(arg) for arg in command.args)}")
     subprocess.run(command.args, cwd=command.cwd, check=True)
+    if command.retarget_project is not None:
+        retarget_project_to_windows(command.retarget_project)
+        print(f"[{command.cwd}] set {command.retarget_project} TargetFramework to net10.0-windows")
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -236,6 +267,8 @@ def main(argv: list[str] | None = None) -> int:
     if not args.execute:
         for command in commands:
             print(f"[{command.cwd}] {' '.join(quote(arg) for arg in command.args)}")
+            if command.retarget_project is not None:
+                print(f"[{command.cwd}] set {command.retarget_project} TargetFramework to net10.0-windows")
         if not args.host_version:
             print("\nNote: Generic Host package was not added. Verify and pass --host-version when application lifetime, configuration, logging, or hosted services require it.")
         if not args.mvvm_version:
@@ -257,8 +290,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         for command in commands:
             run_command(command)
-    except subprocess.CalledProcessError as exc:
-        print(f"error: command failed with exit code {exc.returncode}", file=sys.stderr)
+    except (subprocess.CalledProcessError, RuntimeError) as exc:
+        return_code = exc.returncode if isinstance(exc, subprocess.CalledProcessError) else 1
+        print(f"error: command failed: {exc}", file=sys.stderr)
         if not args.keep_on_failure and not root_preexisted:
             try:
                 removed = cleanup_partial_root(root, args.destination, name)
@@ -269,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"Removed partial scaffold: {root}", file=sys.stderr)
         elif root_preexisted:
             print(f"Preserved pre-existing empty scaffold root: {root}", file=sys.stderr)
-        return exc.returncode or 1
+        return return_code or 1
 
     print("\nScaffold completed and validated in Release configuration. Integrate application lifetime, configuration, logging, navigation, security, and product-specific reliability requirements before production use.")
     return 0

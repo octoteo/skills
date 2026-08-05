@@ -91,6 +91,21 @@ class ArchitectureTierTests(unittest.TestCase):
         self.assertTrue(any("dotnet new wpf" in item for item in rendered))
         self.assertFalse(any("Infrastructure" in item for item in rendered))
         self.assertFalse(any("Modules.Sample" in item for item in rendered))
+        with tempfile.TemporaryDirectory() as temp:
+            commands = scaffold.build_commands(Path(temp), "Domec.DWF", "slnx", None, None, "compact")
+            self.assertEqual(sum(command.retarget_project is not None for command in commands), 1)
+
+    def test_retargets_compact_test_project_to_windows(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            project = Path(temp) / "Sample.Tests.csproj"
+            project.write_text(
+                '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>',
+                encoding="utf-8",
+            )
+            scaffold.retarget_project_to_windows(project)
+            text = project.read_text(encoding="utf-8")
+            self.assertIn("<TargetFramework>net10.0-windows</TargetFramework>", text)
+            self.assertNotIn("<TargetFramework>net10.0</TargetFramework>", text)
 
     def test_product_preserves_layered_topology(self) -> None:
         rendered = self.rendered("product")
