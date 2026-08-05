@@ -1,0 +1,17 @@
+{
+  "name": "troubleshoot-device-command-unknown-state",
+  "category": "troubleshoot",
+  "prompt": "A WPF HMI sends a start-cycle command to a PLC. The network drops immediately after the write, so the client does not receive completion. After reconnect it assumes failure and resends, occasionally starting a duplicate physical cycle. Diagnose the design flaw and propose a production-safe correction and test plan.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Separates transport delivery, controller acceptance, process completion, timeout, and unknown final state instead of treating a successful write as completion.",
+    "Uses correlation or sequence identifiers, idempotency or query-before-retry behavior, and authoritative-state reconciliation before any resend.",
+    "Surfaces stale or unknown state, preserves audit evidence, keeps safety ownership outside the HMI, and validates disconnect, duplicate, restart, simulator, and hardware-in-the-loop scenarios."
+  ]
+}

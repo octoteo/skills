@@ -1,0 +1,17 @@
+{
+  "name": "review-wpf-security-boundaries",
+  "category": "review",
+  "prompt": "Review a production .NET 10 WPF application that imports customer files, stores API tokens locally, communicates with a privileged Windows service over named pipes, embeds WebView2 content, and installs its own updates. Produce prioritized security findings and concrete validation steps.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Defines trust boundaries and enforces authorization outside views, including least privilege and authenticated or access-controlled local IPC.",
+    "Protects secrets, validates imported files and web-to-native messages, avoids unsafe deserialization, and redacts logs and support bundles.",
+    "Requires signed and verified updates, downgrade and rollback policy, dependency review, and reproducible security validation rather than generic advice."
+  ]
+}
