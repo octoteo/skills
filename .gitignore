@@ -1,7 +1,9 @@
 .artifacts/
+.eval-private/
 dist/
 *.zip
 *.zip.sha256
+*.tar.gz.enc
 __pycache__/
 *.py[cod]
 .pytest_cache/
