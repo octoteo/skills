@@ -22,21 +22,14 @@ skills/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── wpf-development/
-│   ├── SKILL.md
-│   ├── agents/openai.yaml
-│   ├── references/
-│   ├── scripts/
-│   └── assets/
-├── evals/
-│   └── wpf-development/
+├── evals/wpf-development/
 ├── eval-results/
-├── tests/
-│   └── wpf-development/
+├── tests/wpf-development/
 ├── tools/
-└── .github/
+└── .github/workflows/
 ```
 
-Every direct child directory containing `SKILL.md` is treated as an installable skill. Evaluation specifications, public evidence, tests, repository tooling, and CI configuration remain outside skill directories and are never included in the installation package.
+Every direct child directory containing `SKILL.md` is treated as an installable skill. Evaluation specifications, private runs, public evidence, tests, repository tooling, and CI configuration remain outside skill directories and are never included in the installation package.
 
 ## WPF Development
 
@@ -54,7 +47,7 @@ The skill supports both greenfield and existing-codebase work:
 - improve testing, accessibility, localization, observability, deployment, updates, and rollback
 - account for .NET 10 WPF and C# 14 capabilities and compatibility changes
 
-The skill name is intentionally version-neutral. .NET 10 is the current implementation baseline and can be advanced later without changing the skill identity or install path.
+The skill name is intentionally version-neutral. .NET 10 is the current implementation baseline and can advance later without changing the skill identity or install path.
 
 ## Install in ChatGPT
 
@@ -95,8 +88,11 @@ The repository enforces:
 - deterministic ZIP timestamps, ordering, permissions, compression, checksum, and manifest
 - Linux repository tests and Windows jobs that execute, build, test, and inspect Compact, Product, and Modular WPF scaffolds
 - a 27-case routing and capability suite with 20 positive and 7 negative scenarios
+- paired OpenAI Responses API collection with an exact hosted Skill version and only the Skill attachment varied between baseline and skilled requests
+- activation evidence derived from visible hosted-shell reads of `SKILL.md` or named Skill resources
 - blind A/B judging, 0–2 rubric scoring, paired bootstrap confidence intervals, and an exact sign test
 - a release checker that rejects synthetic, failing, missing, or package-mismatched stable evidence
+- encrypted private evidence in the optional manual GitHub workflow
 - full-commit SHA pinning for GitHub Actions
 - release SHA-256 assets and GitHub build-provenance attestation
 
@@ -104,17 +100,21 @@ See [`QUALITY.md`](QUALITY.md), [`SECURITY.md`](SECURITY.md), and [`RELEASING.md
 
 ## Run model-versus-baseline evaluation
 
-Create paired response records:
+The repository supports manual response capture and automated collection through the OpenAI Skills API plus Responses API hosted shell.
+
+Preview a complete automated run without network access or cost:
 
 ```bash
-python tools/evaluate_skill.py init \
-  --run-id wpf-development-2026-08-05-01 \
-  --baseline-model MODEL_NAME \
-  --skilled-model MODEL_NAME \
-  --output eval-runs/wpf-development-2026-08-05-01
+python tools/openai_eval_collect.py collect \
+  --receipt eval-runs/private/skill-receipt.json \
+  --manifest .artifacts/wpf-development/manifest.json \
+  --run-id wpf-development-plan \
+  --output eval-runs/wpf-development-plan
 ```
 
-After collecting responses, create blinded judging materials:
+A real run requires `OPENAI_API_KEY` in the environment and explicit `--execute`. Start with `--max-cases 2`, inspect the evidence, then run all 27 cases. The collector persists each successful request and supports `--resume`.
+
+After collection, blind the labeled responses:
 
 ```bash
 python tools/evaluate_skill.py blind \
@@ -123,7 +123,7 @@ python tools/evaluate_skill.py blind \
   --seed 0
 ```
 
-After judging, generate release evidence:
+After independent judging, generate release evidence:
 
 ```bash
 python tools/evaluate_skill.py score \
@@ -139,7 +139,7 @@ python tools/evaluate_skill.py score \
 
 The evaluator measures activation recall, negative specificity, routing accuracy, baseline and skilled rubric means, paired improvement, a 95% bootstrap delta interval, win/tie/loss rate, exact one-sided sign-test significance, and critical failures. Synthetic fixtures always fail the stable-release gate.
 
-See [`evals/wpf-development/README.md`](evals/wpf-development/README.md) for the complete protocol.
+See [`evals/wpf-development/README.md`](evals/wpf-development/README.md) and [`evals/wpf-development/openai-api-collection.md`](evals/wpf-development/openai-api-collection.md).
 
 ## Release convention
 
@@ -150,7 +150,7 @@ wpf-development-v0.9.0-beta.1
 wpf-development-v1.0.0
 ```
 
-Prerelease tags may publish without completed model evidence and are marked as GitHub prereleases. Stable tags are blocked unless a sanitized, non-synthetic, passing evaluation summary exists and matches the newly built package SHA-256.
+Prerelease tags may publish without completed model evidence and are marked as GitHub prereleases. Stable tags are blocked unless sanitized, non-synthetic, passing evaluation evidence exists and matches the newly built package SHA-256.
 
 Validate a future tag locally:
 
