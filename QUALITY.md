@@ -18,6 +18,7 @@ A release is eligible for publication only when every applicable gate passes aga
 - The package checksum and manifest match the generated archive.
 - Evaluation and release tooling tests cover incomplete evidence, synthetic evidence, package mismatch, and stable-tag rejection.
 - Repository inspection tests cover inherited MSBuild properties, central package versions, project-reference integrity, redacted secret findings, and architecture-tier planning.
+- OpenAI collection tests cover dry-run safety, key handling, upload version receipts, rate-limit retry, package binding, paired-request controls, activation evidence, and resumability.
 
 ## WPF execution gates
 
@@ -55,15 +56,30 @@ A stable release must be evaluated through paired blind judging against the exac
 
 Synthetic fixtures validate the evaluator only and always fail the stable-release gate.
 
+## Automated collection gates
+
+When the OpenAI API collector is used:
+
+- The Skill upload receipt must identify an immutable hosted Skill version and match the package and content hashes in `manifest.json`.
+- Baseline and skilled requests use the same prompt, model id, reasoning effort, output limit, hosted shell type, and fresh-container policy.
+- The skilled request differs only by the mounted `skill_reference`.
+- The prompt does not explicitly tell the model to use the Skill; routing remains observable.
+- Skilled activation is inferred only from visible shell commands reading `SKILL.md` or named `wpf-development` references/scripts.
+- Every activation inference retains the matching command as reviewable evidence.
+- Each API response is persisted before the next request so an interrupted run can resume without silently regenerating earlier evidence.
+- Raw API responses and receipts stay private and are not release evidence by themselves.
+- A small ChatGPT product-surface check remains required before a stable release primarily intended for ChatGPT, because API hosted-shell evidence does not prove every product surface behaves identically.
+
 ## Evidence handling gates
 
 - Baseline and skilled responses use the same model family and comparable inference settings.
-- The baseline does not have the skill; the skilled configuration has `wpf-development` installed and available.
+- The baseline does not have the Skill; the skilled configuration has the exact `wpf-development` package version mounted.
 - Skilled activation is recorded for every scenario.
 - Responses are preserved before judging.
 - A/B identities remain hidden from the judge until scoring is complete.
 - Every positive rubric item receives an integer score from 0 to 2 for both variants.
-- Raw responses, blind keys, and private judge notes are not published accidentally.
+- Raw responses, hosted Skill receipts, shell transcripts, blind keys, and private judge notes are not published accidentally.
+- The manual GitHub collection workflow uploads only passphrase-encrypted private evidence.
 - Public evidence contains only sanitized `summary.json` and `report.md` files.
 
 ## Release gates
@@ -73,4 +89,4 @@ Synthetic fixtures validate the evaluator only and always fail the stable-releas
 - Public releases generate GitHub artifact attestation for `skill.zip`.
 - Prerelease tags may publish without model evidence but must be marked prerelease.
 - Stable tags require a passing, non-synthetic evaluation summary whose package SHA-256 matches the newly built package.
-- Release notes identify the source commit, package hash, validation performed, and any remaining manual validation.
+- Release notes identify the source commit, package hash, evaluation runtime and model, validation performed, and any remaining manual validation.
