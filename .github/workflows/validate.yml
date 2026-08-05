@@ -55,7 +55,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Set up .NET 10 SDK
-        uses: actions/setup-dotnet@83c0c1a6c843e2d7e6b14cc940a4a8c77243829b # v4
+        uses: actions/setup-dotnet@5e931af6be0e018f807de246b52f546bfb8da48a # v4
         with:
           dotnet-version: '10.0.x'
       - name: Run repository tests on Windows
