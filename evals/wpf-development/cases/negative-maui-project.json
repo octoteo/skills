@@ -1,0 +1,9 @@
+{
+  "name": "negative-maui-project",
+  "category": "negative",
+  "prompt": "Build a cross-platform .NET MAUI application for Android, iOS, macOS, and Windows.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

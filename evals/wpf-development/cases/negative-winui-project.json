@@ -1,0 +1,9 @@
+{
+  "name": "negative-winui-project",
+  "category": "negative",
+  "prompt": "Create a new WinUI 3 application using the Windows App SDK and implement navigation between pages.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

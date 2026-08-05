@@ -1,0 +1,9 @@
+{
+  "name": "negative-aspnet-api",
+  "category": "negative",
+  "prompt": "Create an ASP.NET Core 10 minimal API with JWT authentication and OpenAPI documentation.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

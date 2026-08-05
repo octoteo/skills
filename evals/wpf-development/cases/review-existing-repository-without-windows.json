@@ -1,0 +1,17 @@
+{
+  "name": "review-existing-repository-without-windows",
+  "category": "review",
+  "prompt": "Analyze a WPF repository from a Linux execution environment and report what can and cannot be verified before release.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Performs static analysis and command planning without claiming a Windows build or UI run occurred.",
+    "Marks Windows compilation, startup, DPI, accessibility, installer, and runtime checks as pending.",
+    "Provides exact Windows validation commands and manual scenarios."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "negative-net-framework-wpf-only",
+  "category": "negative",
+  "prompt": "Fix a validation message in a .NET Framework 4.8 WPF application that must remain on .NET Framework and has no migration or interoperability work.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

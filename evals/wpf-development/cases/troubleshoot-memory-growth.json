@@ -1,0 +1,17 @@
+{
+  "name": "troubleshoot-memory-growth",
+  "category": "troubleshoot",
+  "prompt": "A WPF application grows in memory after repeatedly navigating between views. Produce an evidence-driven investigation and remediation plan.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Checks event subscriptions, static references, timers, cached views, images, journals, and unmanaged resources.",
+    "Requests or uses profiling evidence before declaring the cause.",
+    "Defines a repeatable navigation stress test and an acceptance threshold."
+  ]
+}

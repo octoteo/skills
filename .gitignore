@@ -10,4 +10,8 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
-eval-results/
+eval-runs/
+eval-results/**/responses*.jsonl
+eval-results/**/blind-key.json
+eval-results/**/blind-pairs.jsonl
+eval-results/**/judgments*.jsonl

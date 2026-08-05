@@ -1,0 +1,17 @@
+{
+  "name": "create-industrial-wpf-product",
+  "category": "create",
+  "prompt": "Design a long-lived .NET 10 WPF industrial control product that runs offline, integrates with PLC services, logs operations, supports updates with rollback, and must recover safely after restart.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Chooses a product or modular-product architecture based on explicit boundaries.",
+    "Separates UI, application, domain, and infrastructure concerns including device communication.",
+    "Includes observability, failure-safe behavior, update rollback, and Windows validation."
+  ]
+}

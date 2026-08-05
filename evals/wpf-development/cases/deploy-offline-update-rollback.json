@@ -1,0 +1,17 @@
+{
+  "name": "deploy-offline-update-rollback",
+  "category": "implement",
+  "prompt": "Design an offline-capable installer and updater for a production WPF application with digital signature verification, atomic replacement, database migration compatibility, and automatic rollback.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Keeps update replacement logic outside the running main executable.",
+    "Defines signature verification, staging, health checks, rollback, and database forward/backward compatibility.",
+    "Includes install, upgrade, repair, uninstall, failed-update, and power-loss validation."
+  ]
+}

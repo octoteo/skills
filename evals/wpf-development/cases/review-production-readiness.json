@@ -1,0 +1,17 @@
+{
+  "name": "review-production-readiness",
+  "category": "review",
+  "prompt": "Review a .NET 10 WPF repository for production readiness, including architecture, reliability, accessibility, localization, deployment, updates, and diagnostics.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Orders evidence-backed findings by severity and avoids generic advice.",
+    "Covers Windows-specific startup, shutdown, DPI, theme, accessibility, localization, publish, installer, and rollback checks.",
+    "Clearly separates static review, build results, automated tests, and pending manual validation."
+  ]
+}

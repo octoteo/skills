@@ -1,0 +1,17 @@
+{
+  "name": "modernize-net-framework-wpf",
+  "category": "modernize",
+  "prompt": "Plan a staged migration of a large .NET Framework 4.8 WPF application to .NET 10 while preserving production behavior and keeping each change reviewable.",
+  "expect_activation": true,
+  "critical": true,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Establishes a reproducible baseline before changing the target framework.",
+    "Separates framework migration, package updates, architecture seams, and UI redesign into stages.",
+    "Defines rollback points, compatibility decisions, and Windows build/runtime validation."
+  ]
+}

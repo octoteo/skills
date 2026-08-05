@@ -1,0 +1,9 @@
+{
+  "name": "negative-avalonia-project",
+  "category": "negative",
+  "prompt": "Modernize an Avalonia desktop application and improve its cross-platform XAML styling.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}

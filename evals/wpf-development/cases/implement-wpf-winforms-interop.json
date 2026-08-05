@@ -1,0 +1,17 @@
+{
+  "name": "implement-wpf-winforms-interop",
+  "category": "implement",
+  "prompt": "Integrate a legacy Windows Forms camera control into a .NET 10 WPF application and define safe DPI, focus, lifetime, and disposal boundaries.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Treats the request as a WPF interoperability boundary rather than rejecting it as WinForms-only.",
+    "Addresses WindowsFormsHost or ElementHost, DPI, focus, airspace, threading, and disposal concerns.",
+    "Keeps vendor or native control ownership explicit and proposes Windows runtime validation."
+  ]
+}

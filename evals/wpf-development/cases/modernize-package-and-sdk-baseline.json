@@ -1,0 +1,17 @@
+{
+  "name": "modernize-package-and-sdk-baseline",
+  "category": "modernize",
+  "prompt": "Stabilize an existing .NET 10 WPF repository whose SDK and package versions drift across developer machines and offline factory deployments.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Inspects global.json, central package management, lock or restore behavior, and offline package sources.",
+    "Avoids inventing package versions and requires verification from official metadata or the repository.",
+    "Defines a reproducible restore and rollback strategy for developer and factory environments."
+  ]
+}

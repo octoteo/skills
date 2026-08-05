@@ -1,0 +1,17 @@
+{
+  "name": "create-generic-host-integration",
+  "category": "implement",
+  "prompt": "Add Generic Host, dependency injection, configuration, and structured logging to an existing .NET 10 WPF application that currently launches through StartupUri.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Removes StartupUri when the host owns window creation.",
+    "Defines startup, shutdown, service lifetimes, and disposal behavior.",
+    "Avoids a global service locator and validates clean application shutdown."
+  ]
+}

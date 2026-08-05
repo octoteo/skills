@@ -1,0 +1,17 @@
+{
+  "name": "implement-navigation-lifecycle",
+  "category": "implement",
+  "prompt": "Implement navigation in a long-lived WPF shell where views subscribe to messages and timers. Prevent duplicate subscriptions and memory leaks across repeated navigation.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Defines view and view-model lifetime ownership instead of caching every screen indefinitely.",
+    "Disposes subscriptions, timers, cancellation sources, and unmanaged resources at explicit lifecycle boundaries.",
+    "Includes a repeated-navigation regression test or profiling acceptance criterion."
+  ]
+}

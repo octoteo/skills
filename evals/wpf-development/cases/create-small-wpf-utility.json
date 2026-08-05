@@ -1,0 +1,17 @@
+{
+  "name": "create-small-wpf-utility",
+  "category": "create",
+  "prompt": "Create a small .NET 10 WPF desktop utility with a single window, settings persistence, and one unit-test project. Avoid unnecessary modular architecture.",
+  "expect_activation": true,
+  "critical": false,
+  "graders": [
+    {
+      "type": "prompt"
+    }
+  ],
+  "rubric": [
+    "Chooses the compact architecture tier and explains why it is sufficient.",
+    "Targets net10.0-windows with UseWPF and includes a testable non-UI boundary.",
+    "Does not introduce runtime plugins, an event bus, or excessive projects without evidence."
+  ]
+}

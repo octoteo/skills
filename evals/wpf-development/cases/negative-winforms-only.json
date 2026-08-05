@@ -1,0 +1,9 @@
+{
+  "name": "negative-winforms-only",
+  "category": "negative",
+  "prompt": "Fix layout and high-DPI problems in a Windows Forms-only application with no WPF interoperability.",
+  "expect_activation": false,
+  "critical": false,
+  "graders": [],
+  "rubric": []
+}
