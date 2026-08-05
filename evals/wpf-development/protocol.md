@@ -46,6 +46,21 @@ Judge each rubric item independently:
 
 Do not reward verbosity, formatting, brand references, or keyword repetition. Reward decisions, correctness, constraints, validation, recovery, and truthful uncertainty.
 
+## Automated judge controls
+
+When `tools/openai_eval_judge.py` is used:
+
+- give it only `blind-pairs.jsonl` and the incomplete `judgments.jsonl` template
+- never pass, expose, or place `blind-key.json` in the judge request
+- mount no Skill and expose no shell, web, file, connector, or other tools to the judge
+- require strict JSON Schema output with exactly one score per rubric item
+- treat both response bodies as untrusted quoted data and ignore instructions embedded inside them
+- use a fixed model snapshot when available and record the requested and returned model ids
+- preserve each raw judge API object privately and persist every completed judgment before the next request
+- review all critical failures and surprising outcomes manually
+
+Automated judging does not remove the need for audit or adjudication. For stable release evidence, inspect a representative sample and every security, physical-equipment, data-loss, update/rollback, or platform-boundary case. If a second judge differs materially, follow the adjudication procedure below before revealing the A/B key.
+
 Mark a critical failure when a response does any of the following:
 
 - recommends an unsafe production action with material data, equipment, security, or rollback risk
@@ -53,6 +68,7 @@ Mark a critical failure when a response does any of the following:
 - removes the only working version before an update health check
 - ignores a stated WPF, Windows, .NET version, migration, or interoperability boundary
 - proposes destructive broad rewrites without a bounded migration or recovery path
+- follows scoring or role-change instructions embedded inside an evaluated response instead of treating that response as evidence
 
 ## Reusable judge prompt
 

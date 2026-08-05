@@ -7,7 +7,8 @@ All notable repository and skill changes are documented here.
 ### Added
 
 - A standard-library OpenAI Skills API uploader and Responses API paired-response collector with dry-run defaults, immutable Skill-version receipts, bounded retries, exact package-hash binding, per-request persistence, resumability, and visible activation evidence.
-- A manually dispatched encrypted evaluation workflow that keeps API credentials out of command lines and uploads only passphrase-encrypted private evidence.
+- A strict structured-output blind judge that mounts no Skill or tools, accepts no blind key, treats responses as untrusted data, persists per-case evidence, and supports resume.
+- A manually dispatched encrypted evaluation workflow that collects paired responses, runs blinded judging, creates a private candidate score report, keeps API credentials out of command lines, and uploads only passphrase-encrypted private evidence.
 - An OpenAI API collection guide covering smoke runs, full runs, version reuse, privacy, decryption, blind judging, and the ChatGPT product-surface validation boundary.
 - Repository-aware WPF inspection that resolves unconditional `Directory.Build.props` values, central package versions, `global.json` SDK metadata, project-reference cycles, missing references, risky publish settings, and redacted plain-text secret findings.
 - Compact, Product, and Modular compile-time WPF scaffold tiers with Release build/test validation and safer failure cleanup for pre-existing empty destinations.

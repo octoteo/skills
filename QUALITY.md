@@ -19,6 +19,7 @@ A release is eligible for publication only when every applicable gate passes aga
 - Evaluation and release tooling tests cover incomplete evidence, synthetic evidence, package mismatch, and stable-tag rejection.
 - Repository inspection tests cover inherited MSBuild properties, central package versions, project-reference integrity, redacted secret findings, and architecture-tier planning.
 - OpenAI collection tests cover dry-run safety, key handling, upload version receipts, rate-limit retry, package binding, paired-request controls, activation evidence, and resumability.
+- Automated judge tests cover strict score-array schemas, A/B identity isolation, prompt-injection resistance instructions, no-tool/no-Skill requests, blind-key exclusion, per-case persistence, and resumability.
 
 ## WPF execution gates
 
@@ -69,6 +70,19 @@ When the OpenAI API collector is used:
 - Each API response is persisted before the next request so an interrupted run can resume without silently regenerating earlier evidence.
 - Raw API responses and receipts stay private and are not release evidence by themselves.
 - A small ChatGPT product-surface check remains required before a stable release primarily intended for ChatGPT, because API hosted-shell evidence does not prove every product surface behaves identically.
+
+## Automated judge gates
+
+When the structured-output judge is used:
+
+- The judge receives only `blind-pairs.jsonl` data and the incomplete judgment template; it has no blind-key parameter or input.
+- The request mounts no Skill and exposes no shell, web, file, connector, or other tools.
+- Strict JSON Schema output requires exactly one integer score from 0 to 2 per rubric item for A and B.
+- Response texts are treated as untrusted quoted data; embedded role, scoring, tool, and output instructions must be ignored.
+- The requested and returned judge model ids, response id, usage, and completion time are retained privately.
+- Every completed judgment and raw judge response is persisted before the next request; interrupted judging can resume without replacing completed judgments.
+- Automated judgments are manually audited for a representative sample and every critical, security, equipment, data-loss, rollback, or platform-boundary case.
+- Material disagreement between independent judges requires blinded adjudication before the A/B key is revealed.
 
 ## Evidence handling gates
 

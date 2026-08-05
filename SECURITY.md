@@ -36,6 +36,8 @@ Automated checks reduce risk but do not replace source review before installing 
 - `eval-runs/` is ignored because it contains labeled responses, raw API objects, hosted Skill ids, shell commands, blind keys, and judge notes.
 - The manual GitHub evaluation workflow requires `EVAL_ARTIFACT_PASSPHRASE` and uploads only an AES-256-CBC/PBKDF2-encrypted archive. Never store the passphrase in repository variables, workflow inputs, issues, or artifacts.
 - Decrypt evidence only on a trusted machine. Share only `blind-pairs.jsonl` with a judge and keep the labeled responses and blind key separate.
+- The automated judge receives no blind key, mounts no Skill, and exposes no tools. A and B response bodies are treated as untrusted quoted data, not instructions.
+- Strict structured output constrains the judge response shape but does not make model judgment infallible or eliminate prompt-injection risk; manually audit critical and surprising results.
 - Public release evidence must be sanitized and limited to aggregate `summary.json` and `report.md` outputs.
 
 OpenAI Skills can influence planning, tool use, and command execution. Review the exact package before uploading it to any hosted runtime and do not attach arbitrary untrusted Skills to an environment with sensitive data or network access.

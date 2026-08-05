@@ -90,6 +90,7 @@ The repository enforces:
 - a 27-case routing and capability suite with 20 positive and 7 negative scenarios
 - paired OpenAI Responses API collection with an exact hosted Skill version and only the Skill attachment varied between baseline and skilled requests
 - activation evidence derived from visible hosted-shell reads of `SKILL.md` or named Skill resources
+- an optional independent structured-output judge that receives only blinded A/B data, mounts no Skill, and has no blind-key access
 - blind A/B judging, 0–2 rubric scoring, paired bootstrap confidence intervals, and an exact sign test
 - a release checker that rejects synthetic, failing, missing, or package-mismatched stable evidence
 - encrypted private evidence in the optional manual GitHub workflow
@@ -123,7 +124,18 @@ python tools/evaluate_skill.py blind \
   --seed 0
 ```
 
-After independent judging, generate release evidence:
+Optionally run the independent structured-output judge. It receives only blinded pairs and does not accept the blind key:
+
+```bash
+python tools/openai_eval_judge.py \
+  --pairs eval-runs/wpf-development-2026-08-05-01/judging/blind-pairs.jsonl \
+  --judgments eval-runs/wpf-development-2026-08-05-01/judging/judgments.jsonl \
+  --model gpt-5.5-2026-04-23 \
+  --reasoning-effort high \
+  --execute
+```
+
+Audit critical and surprising judgments before generating release evidence:
 
 ```bash
 python tools/evaluate_skill.py score \

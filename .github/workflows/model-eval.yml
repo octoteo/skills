@@ -14,8 +14,24 @@ on:
         default: medium
         type: choice
         options: [low, medium, high, xhigh]
+      judge_model:
+        description: Independent Responses API model used for blinded structured judging
+        required: true
+        default: gpt-5.5-2026-04-23
+        type: string
+      judge_reasoning_effort:
+        description: Reasoning effort for the blind judge
+        required: true
+        default: high
+        type: choice
+        options: [low, medium, high, xhigh]
+      evidence_version:
+        description: Candidate version written into the private score report
+        required: true
+        default: 1.0.0
+        type: string
       case_limit:
-        description: Number of cases to collect; 0 runs the complete suite
+        description: Number of cases to collect; 0 runs, judges, and scores the complete suite
         required: true
         default: '0'
         type: string
@@ -34,9 +50,9 @@ concurrency:
 
 jobs:
   collect:
-    name: Encrypted paired response collection
+    name: Encrypted paired evaluation
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
@@ -44,6 +60,9 @@ jobs:
       EVAL_ARTIFACT_PASSPHRASE: ${{ secrets.EVAL_ARTIFACT_PASSPHRASE }}
       MODEL: ${{ inputs.model }}
       REASONING_EFFORT: ${{ inputs.reasoning_effort }}
+      JUDGE_MODEL: ${{ inputs.judge_model }}
+      JUDGE_REASONING_EFFORT: ${{ inputs.judge_reasoning_effort }}
+      EVIDENCE_VERSION: ${{ inputs.evidence_version }}
       CASE_LIMIT: ${{ inputs.case_limit }}
       EXISTING_SKILL_ID: ${{ inputs.skill_id }}
     steps:
@@ -53,7 +72,7 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.12'
-      - name: Require protected secrets
+      - name: Require protected secrets and valid inputs
         shell: bash
         run: |
           set -euo pipefail
@@ -67,6 +86,10 @@ jobs:
           fi
           if [[ ! "${CASE_LIMIT}" =~ ^[0-9]+$ ]]; then
             echo '::error::case_limit must be a non-negative integer.'
+            exit 1
+          fi
+          if [[ -z "${EVIDENCE_VERSION}" ]]; then
+            echo '::error::evidence_version must not be empty.'
             exit 1
           fi
       - name: Validate and package exact Skill
@@ -129,6 +152,30 @@ jobs:
             --responses "${{ steps.plan.outputs.private_root }}/run/responses.jsonl" \
             --output "${{ steps.plan.outputs.private_root }}/run/judging" \
             --seed 0
+      - name: Judge blinded pairs
+        if: ${{ inputs.case_limit == '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/openai_eval_judge.py \
+            --pairs "${{ steps.plan.outputs.private_root }}/run/judging/blind-pairs.jsonl" \
+            --judgments "${{ steps.plan.outputs.private_root }}/run/judging/judgments.jsonl" \
+            --model "${JUDGE_MODEL}" \
+            --reasoning-effort "${JUDGE_REASONING_EFFORT}" \
+            --execute
+      - name: Score private candidate evidence
+        if: ${{ inputs.case_limit == '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/evaluate_skill.py score \
+            --responses "${{ steps.plan.outputs.private_root }}/run/responses.jsonl" \
+            --key "${{ steps.plan.outputs.private_root }}/run/judging/blind-key.json" \
+            --judgments "${{ steps.plan.outputs.private_root }}/run/judging/judgments.jsonl" \
+            --manifest .artifacts/wpf-development/manifest.json \
+            --version "${EVIDENCE_VERSION}" \
+            --source-commit "${GITHUB_SHA}" \
+            --output "${{ steps.plan.outputs.private_root }}/run/scored"
       - name: Encrypt private evaluation evidence
         id: encrypt
         if: always()
@@ -154,6 +201,9 @@ jobs:
               "run_id": os.environ["RUN_ID"],
               "model": os.environ["MODEL"],
               "reasoning_effort": os.environ["REASONING_EFFORT"],
+              "judge_model": os.environ["JUDGE_MODEL"],
+              "judge_reasoning_effort": os.environ["JUDGE_REASONING_EFFORT"],
+              "evidence_version": os.environ["EVIDENCE_VERSION"],
               "case_limit": int(os.environ["CASE_LIMIT"]),
               "source_commit": os.environ["GITHUB_SHA"],
               "encrypted": True,

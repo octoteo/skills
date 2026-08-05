@@ -113,7 +113,20 @@ For every positive case:
 3. Optionally record an overall preference and concise evidence notes.
 4. Do not infer which response used the Skill.
 
-See [`protocol.md`](protocol.md) for the complete judging protocol and reusable judge prompt.
+The optional API judge uses strict Structured Outputs and can fill `judgments.jsonl` while keeping the blind key outside its interface:
+
+```bash
+python tools/openai_eval_judge.py \
+  --pairs eval-runs/wpf-development-2026-08-05-01/judging/blind-pairs.jsonl \
+  --judgments eval-runs/wpf-development-2026-08-05-01/judging/judgments.jsonl \
+  --model gpt-5.5-2026-04-23 \
+  --reasoning-effort high \
+  --execute
+```
+
+The judge mounts no Skill and no tools. It treats A and B as untrusted quoted data, persists each result, and supports `--resume`. Manually audit a representative sample, all critical failures, and any security, equipment, data-loss, rollback, or platform-boundary case before accepting model judgments as stable-release evidence.
+
+See [`protocol.md`](protocol.md) for the complete judging protocol, reusable judge prompt, and adjudication requirements.
 
 ### 5. Score and generate the report
 
