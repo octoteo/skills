@@ -13,6 +13,8 @@ mod = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = mod
 SPEC.loader.exec_module(mod)
 
+HAS_HTML_DEPS = importlib.util.find_spec("bs4") is not None and importlib.util.find_spec("markdownify") is not None
+
 
 class Tests(unittest.TestCase):
     def test_unwrap(self):
@@ -29,6 +31,7 @@ class Tests(unittest.TestCase):
     def test_verification_detection(self):
         self.assertTrue(mod.is_verify("当前环境异常，完成验证后即可继续访问"))
 
+    @unittest.skipUnless(HAS_HTML_DEPS, "optional HTML conversion dependencies are not installed")
     def test_html_conversion(self):
         html = """
         <h1 id='activity-name'>T</h1>
