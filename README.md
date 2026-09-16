@@ -7,8 +7,11 @@ A public collection of reusable Agent Skills maintained by [octoteo](https://git
 | Skill | Status | Description |
 |---|---|---|
 | [`wpf-development`](wpf-development/) | Beta | Build, modernize, review, and troubleshoot production WPF applications. The current default baseline is .NET 10 and C# 14. |
+| [`wechat-article-markdown`](wechat-article-markdown/) | Beta | Retrieve public WeChat Official Account articles through resilient browser/proxy fallbacks and convert them to clean Markdown. |
 
 `wpf-development` is engineering-hardened for deterministic packaging, repository analysis, three-tier scaffolding, Linux validation, and real Windows WPF execution. It remains Beta until a non-synthetic paired model evaluation passes every stable-release threshold.
+
+`wechat-article-markdown` uses environment-aware retrieval rather than depending on one proxy: desktop environments prefer a real Chrome/CDP or persistent browser session, while headless/cloud environments can use a proxy-backed converter before falling back through additional routes. It explicitly rejects WeChat verification and rate-limit pages as article content.
 
 ## Repository layout
 
@@ -22,9 +25,12 @@ skills/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── wpf-development/
+├── wechat-article-markdown/
 ├── evals/wpf-development/
+├── evals/wechat-article-markdown/
 ├── eval-results/
 ├── tests/wpf-development/
+├── tests/wechat-article-markdown/
 ├── tools/
 └── .github/workflows/
 ```
@@ -49,6 +55,18 @@ The skill supports both greenfield and existing-codebase work:
 
 The skill name is intentionally version-neutral. .NET 10 is the current implementation baseline and can advance later without changing the skill identity or install path.
 
+## WeChat Article Markdown
+
+The skill retrieves the real body of a public `mp.weixin.qq.com/s/...` article before downstream summarization, translation, fact-checking, or archiving. Its automatic strategy is environment-aware:
+
+- desktop or attachable Chrome: real browser/CDP first, then replaceable public fallbacks
+- headless/cloud: proxy-backed conversion first, then browser and HTTP-reader fallbacks
+- explicit detection of `wappoc_appmsgcaptcha`, environment-anomaly, and rate-limit pages
+- persistent browser profile and optional human verification without exporting cookies or credentials
+- Markdown conversion that preserves useful source links and lazy-loaded image URLs when available
+
+Textoolkit is intentionally treated as a replaceable cloud convenience route, not a required dependency.
+
 ## Install in ChatGPT
 
 Use a package generated from a release or a trusted checkout:
@@ -65,12 +83,13 @@ Local package generation:
 python tools/validate_repository.py
 python tools/run_tests.py
 python tools/package_skill.py wpf-development .artifacts/wpf-development
+python tools/package_skill.py wechat-article-markdown .artifacts/wechat-article-markdown
 ```
 
 Outputs:
 
 ```text
-.artifacts/wpf-development/
+.artifacts/<skill-name>/
 ├── skill.zip
 ├── skill.zip.sha256
 └── manifest.json
@@ -87,7 +106,7 @@ The repository enforces:
 - rejection of hidden files, symbolic links, credential-like files, secret-like content, path collisions, caches, and oversized files
 - deterministic ZIP timestamps, ordering, permissions, compression, checksum, and manifest
 - Linux repository tests and Windows jobs that execute, build, test, and inspect Compact, Product, and Modular WPF scaffolds
-- a 27-case routing and capability suite with 20 positive and 7 negative scenarios
+- routing and capability suites with positive, negative, and critical scenarios for each directly invokable skill
 - paired OpenAI Responses API collection with an exact hosted Skill version and only the Skill attachment varied between baseline and skilled requests
 - activation evidence derived from visible hosted-shell reads of `SKILL.md` or named Skill resources
 - an optional independent structured-output judge that receives only blinded A/B data, mounts no Skill, and has no blind-key access
@@ -113,7 +132,7 @@ python tools/openai_eval_collect.py collect \
   --output eval-runs/wpf-development-plan
 ```
 
-A real run requires `OPENAI_API_KEY` in the environment and explicit `--execute`. Start with `--max-cases 2`, inspect the evidence, then run all 27 cases. The collector persists each successful request and supports `--resume`.
+A real run requires `OPENAI_API_KEY` in the environment and explicit `--execute`. Start with `--max-cases 2`, inspect the evidence, then run the complete case set. The collector persists each successful request and supports `--resume`.
 
 After collection, blind the labeled responses:
 
@@ -160,6 +179,7 @@ Use per-skill tags so this repository can host multiple independently versioned 
 ```text
 wpf-development-v0.9.0-beta.1
 wpf-development-v1.0.0
+wechat-article-markdown-v0.1.0-beta.1
 ```
 
 Prerelease tags may publish without completed model evidence and are marked as GitHub prereleases. Stable tags are blocked unless sanitized, non-synthetic, passing evaluation evidence exists and matches the newly built package SHA-256.
