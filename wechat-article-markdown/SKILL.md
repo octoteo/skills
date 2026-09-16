@@ -82,11 +82,10 @@ python scripts/fetch_wechat_article.py "<wechat-url>" \
 
 ## Dependencies
 
-Base conversion requires `requests`, `beautifulsoup4`, and `markdownify`.
-Textoolkit and browser fallbacks additionally require `playwright` and Chromium/Chrome:
+HTTP retrieval uses the Python standard library. HTML-to-Markdown conversion requires `beautifulsoup4` and `markdownify` only when an HTML route succeeds. Textoolkit and real-browser routes additionally require `playwright` and Chromium/Chrome:
 
 ```bash
-pip install playwright
+pip install beautifulsoup4 markdownify playwright
 playwright install chromium
 ```
 
