@@ -1,0 +1,3 @@
+interface:
+  display_name: "WeChat Article Markdown"
+  short_description: "Convert public WeChat articles to clean Markdown"
